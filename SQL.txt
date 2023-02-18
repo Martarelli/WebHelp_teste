@@ -1,0 +1,74 @@
+﻿CREATE TABLE cidade (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    nome varchar(50),
+    uf CHAR(2)
+    );
+    
+CREATE TABLE funcionario (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    nome varchar(50),
+    numero int,
+    bairro varchar(50),
+    id_cidade int
+    );
+    
+CREATE TABLE cliente (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    nome varchar(50),
+    numero int,
+    bairro varchar(50),
+    id_cidade int,
+    email varchar(100),
+    telefone varchar(50),
+    celular varchar(50),
+    datacadastro date
+    );
+    
+CREATE TABLE produto (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    descricao text,
+    valor float
+    );
+
+CREATE TABLE venda (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    id_cliente int,
+    id_funcionario int,
+    data_venda date
+    );
+
+CREATE TABLE venda_itens (
+    id_venda int,
+    id_produto int,
+    qtd int
+    );
+
+ALTER TABLE funcionario ADD CONSTRAINT fk_cidade_funcionario FOREIGN KEY (id_cidade) REFERENCES cidade(id);
+ALTER TABLE cliente ADD CONSTRAINT fk_cidade_cliente FOREIGN KEY (id_cidade) REFERENCES cidade(id);
+ALTER TABLE venda ADD CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id);
+ALTER TABLE venda ADD CONSTRAINT fk_funcionario FOREIGN KEY (id_funcionario) REFERENCES funcionario(id);
+ALTER TABLE venda_itens ADD CONSTRAINT fk_venda FOREIGN KEY (id_venda) REFERENCES venda(id);
+ALTER TABLE venda_itens ADD CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES produto(id);
+
+CREATE INDEX ix_uf ON cidade(uf);
+
+SELECT SUM(vi.qtd) AS 'Quantidade vendida'
+FROM venda_itens AS vi
+INNER JOIN venda AS v ON vi.id_venda = v.id 
+INNER JOIN cliente AS c ON v.id_cliente = c.id
+INNER JOIN cidade AS ci ON c.id_cidade = ci.id
+WHERE ci.uf = 'sp' and v.data_venda BETWEEN '2022-08-01' AND '2022-08-10';
+
+SELECT f.nome AS Funcionario, SUM(p.valor*vi.qtd) AS Valor
+FROM funcionario AS f
+INNER JOIN venda AS v ON v.id_funcionario = f.id 
+INNER JOIN venda_itens AS vi ON vi.id_venda = v.id
+INNER JOIN produto AS p ON p.id = vi.id_produto
+WHERE v.data_venda BETWEEN '2022-07-01' AND '2022-07-30' 
+GROUP BY f.nome
+HAVING SUM (p.valor*vi.qtd) > 100000
+ORDER BY SUM(p.valor*vi.qtd) DESC;
+
+sys.dm_exec
+   
+   
